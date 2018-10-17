@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_package = "com.sgitario.grpc.lottery";
+
+message Empty {
+}
+
+message Player {
+    string name = 1;
+}
+
+message ListPlayers {
+    repeated Player players = 1;
+}
+
+service LotteryService {
+	rpc enter(Player) returns (Empty);
+    rpc seePlayers(Empty) returns (stream Player);
+    rpc listPlayers(Empty) returns (ListPlayers);
+    rpc pickWinner(Empty) returns (Player);
+}
