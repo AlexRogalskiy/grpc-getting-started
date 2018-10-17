@@ -1,7 +1,0 @@
-/Users/josecarvajal/Development/Sources/my/grpc-getting-started/src/main/java/org/sgitario/grpc/clients/EnterLotteryClient.java
-/Users/josecarvajal/Development/Sources/my/grpc-getting-started/src/main/java/org/sgitario/grpc/LotteryService.java
-/Users/josecarvajal/Development/Sources/my/grpc-getting-started/src/main/java/org/sgitario/grpc/LotteryServer.java
-/Users/josecarvajal/Development/Sources/my/grpc-getting-started/src/main/java/org/sgitario/grpc/clients/SeePlayersLotteryClient.java
-/Users/josecarvajal/Development/Sources/my/grpc-getting-started/target/generated-sources/protobuf/grpc-java/com/sgitario/grpc/lottery/LotteryServiceGrpc.java
-/Users/josecarvajal/Development/Sources/my/grpc-getting-started/src/main/java/org/sgitario/grpc/LotteryClient.java
-/Users/josecarvajal/Development/Sources/my/grpc-getting-started/target/generated-sources/protobuf/java/com/sgitario/grpc/lottery/Lottery.java
