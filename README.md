@@ -1,11 +1,10 @@
 ---
 layout: post
-title: gRPC for Java Developpers Getting Started
+title: gRPC Getting Started for Java Developers 
 date: 2018-10-17
 tags: [ GRPC, REST, Spring Boot ]
 ---
 
-# Introduction
 [gRPC](https://grpc.io) is a high performance RPC framework that works over HTTP/2. It's designed to "refactor" the REST api to fix some of its pitfalls and bring very many interesting features. 
 
 From my point of view, these are the major features:
@@ -103,7 +102,7 @@ message ListPlayers {
 
 service LotteryService {
     // Sign Up in the lottery
-	rpc enter(Player) returns (Empty);
+    rpc enter(Player) returns (Empty);
 
     // See the players joining to the lottery in live
     rpc seePlayers(Empty) returns (stream Player);
@@ -148,10 +147,10 @@ Then, let's start with the services in our definition. I guess all of these serv
     private static Set<StreamObserver<Player>> observers = ConcurrentHashMap.newKeySet();
 
     @Override
-	public void seePlayers(Empty request, StreamObserver<Player> responseObserver) {
-		players.forEach(responseObserver::onNext);
-		observers.add(responseObserver);
-	}
+    public void seePlayers(Empty request, StreamObserver<Player> responseObserver) {
+        players.forEach(responseObserver::onNext);
+        observers.add(responseObserver);
+    }
 ```
 
 This service will join the input stream in a list of observers.
@@ -159,15 +158,15 @@ This service will join the input stream in a list of observers.
 - Enter
 
 ```java
-	private final Set<Player> players = new HashSet<>();
+    private final Set<Player> players = new HashSet<>();
 
-	@Override
-	public void enter(Player request, StreamObserver<Empty> responseObserver) {
-		LOG.info("New player: " + request.getName());
-		players.add(request);
-		observers.forEach(o -> o.onNext(request));
-		responseObserver.onNext(Empty.getDefaultInstance());
-		responseObserver.onCompleted();
+    @Override
+    public void enter(Player request, StreamObserver<Empty> responseObserver) {
+        LOG.info("New player: " + request.getName());
+        players.add(request);
+        observers.forEach(o -> o.onNext(request));
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
 	}
 ```
 
@@ -177,17 +176,17 @@ This service will add the new player into a list and it will notify the observer
 
 ```java
     @Override
-	public void pickWinner(Empty request, StreamObserver<Player> responseObserver) {
-		observers.forEach(o -> o.onCompleted());
-		observers.clear();
+    public void pickWinner(Empty request, StreamObserver<Player> responseObserver) {
+        observers.forEach(o -> o.onCompleted());
+        observers.clear();
 
-		Random rnd = new Random(new Date().getTime());
-		int winner = rnd.nextInt(players.size());
-		Iterator<Player> it = players.iterator();
-		Stream.iterate(0, i -> i + 1).limit(winner).forEach(i -> it.next());
-		players.clear();
-		responseObserver.onNext(it.next());
-		responseObserver.onCompleted();
+        Random rnd = new Random(new Date().getTime());
+        int winner = rnd.nextInt(players.size());
+        Iterator<Player> it = players.iterator();
+        Stream.iterate(0, i -> i + 1).limit(winner).forEach(i -> it.next());
+        players.clear();
+        responseObserver.onNext(it.next());
+        responseObserver.onCompleted();
 	}
 ```
 
@@ -197,9 +196,9 @@ This service will close the observers streams and will pick a random winner.
 
 ```java
     @Override
-	public void listPlayers(Empty request, StreamObserver<ListPlayers> responseObserver) {
-		responseObserver.onNext(ListPlayers.newBuilder().addAllPlayers(players).build());
-		responseObserver.onCompleted();
+    public void listPlayers(Empty request, StreamObserver<ListPlayers> responseObserver) {
+        responseObserver.onNext(ListPlayers.newBuilder().addAllPlayers(players).build());
+        responseObserver.onCompleted();
 	}
 ```
 
@@ -214,14 +213,14 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 public class LotteryServer {
-	public static final int PORT = 9090;
+    public static final int PORT = 9090;
 
-	public static void main(String[] args) throws InterruptedException, IOException {
-		Server server = ServerBuilder.forPort(PORT).addService(new LotteryService()).build();
-		server.start();
-		System.out.println("Lottery server at localhost:9090");
-		server.awaitTermination();
-	}
+    public static void main(String[] args) throws InterruptedException, IOException {
+        Server server = ServerBuilder.forPort(PORT).addService(new LotteryService()).build();
+        server.start();
+        System.out.println("Lottery server at localhost:9090");
+        server.awaitTermination();
+    }
 }
 ```
 
@@ -234,28 +233,28 @@ We have already our server up and running. But we miss the client side. gRPC als
 ```java
 public class LotteryClient {
 
-	private final ManagedChannel channel;
+    private final ManagedChannel channel;
 
-	public LotteryClient() {
-		channel = ManagedChannelBuilder.forAddress("localhost", LotteryServer.PORT).usePlaintext().build();
-	}
+    public LotteryClient() {
+        channel = ManagedChannelBuilder.forAddress("localhost", LotteryServer.PORT).usePlaintext().build();
+    }
 
     // ...
 }
 ```
 
-We only need to use the ManagedChannelBuilder builder from gRPC and that's it. Again, this is the easiest approach.
+We only need to use the ManagedChannelBuilder builder from gRPC and that's it. Using *usePlaintext*, we instruct gRPC to not use SSL to encrypt the messages. Again, this is the easiest approach.
 
 gRPC provides a blocking and async approach to invoke the methods:
 
 ```java
     public LotteryServiceStub async() {
-		return LotteryServiceGrpc.newStub(channel);
-	}
+        return LotteryServiceGrpc.newStub(channel);
+    }
 
-	public LotteryServiceBlockingStub blocking() {
-		return LotteryServiceGrpc.newBlockingStub(channel);
-	}
+    public LotteryServiceBlockingStub blocking() {
+        return LotteryServiceGrpc.newBlockingStub(channel);
+    }
 ```
 
 And finally all we need is to start using the services accodingly:
@@ -302,4 +301,4 @@ gRPC is very straightforward to use once you understand all the concepts around.
 
 One of my main concerns is about how to troubleshoot issues in production. So far, I'm used to work with curl commands and see the responses. But again, thanks to the community, there are some workarounds to, as an example, [return JSON responses or to work as an usual REST API](https://github.com/grpc-ecosystem/grpc-gateway).
 
-See my sources in [my github project](https://github.com/Sgitario/grpc-getting-started).
+See the sources in [my github project](https://github.com/Sgitario/grpc-getting-started).
